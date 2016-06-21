@@ -5,19 +5,26 @@ import argparse, json, base64, struct
 import urllib2
 from datetime import datetime
 
-LOGS = [
-    'https://ct.googleapis.com/aviator',
-    'https://ct.googleapis.com/pilot',
-    'https://ct.googleapis.com/rocketeer',
-    'https://log.certly.io',
-    'https://ct1.digicert-ct.com/log',     # only accepts certificates issued by some CAs
-    'https://ct.izenpe.com',               # only accepts certificates issued by some CAs
-]
+LOGS = {
+    'aviator': 'https://ct.googleapis.com/aviator',
+    'pilot': 'https://ct.googleapis.com/pilot',
+    'rocketeer': 'https://ct.googleapis.com/rocketeer',
+    'submariner': 'https://ct.googleapis.com/submariner',
+    'digicert': 'https://ct1.digicert-ct.com/log',
+    'symantec': 'https://ct.ws.symantec.com',
+    'venafi': 'https://ctlog.api.venafi.com',
+    'wosign': 'https://ctlog.wosign.com',
+    'vega': 'https://vega.ws.symantec.com',
+    'cnnic': 'https://ctserver.cnnic.cn',
+    'gdca': 'https://ct.gdca.com.cn',
+    'startssl': 'https://ct.startssl.com',
+    'izenpe': 'https://ct.izenpe.eus',
+}
 
-parser = argparse.ArgumentParser(description='Certificate Transparency certificate submission client.',
-                                 epilog='Please note that some logs will accept only certificates issued by some CAs.')
+parser = argparse.ArgumentParser(description='Certificate Transparency submission client')
 parser.add_argument('pem', type=argparse.FileType('r'), help='PEM files forming a certificate chain (with or without root)', nargs='+')
-parser.add_argument('-o', dest='output', type=argparse.FileType('w'), help='output raw TLS extension data with all the SCTs')
+parser.add_argument('-o', dest='output', type=argparse.FileType('w'), help='output raw TLS extension data with all the SCTs (compatible with haproxy)')
+parser.add_argument('-O', dest='output_dir', help='output individual SCTs to a directory (compatible with nginx-ct module)')
 
 args = parser.parse_args()
 
@@ -41,10 +48,10 @@ for pem in args.pem:
 jsonRequest = json.dumps({'chain': chain})
 
 scts = []
-for log in LOGS:
-    print "sending request to %s" % log
+for log in sorted(LOGS.iterkeys()):
+    print "sending request to %s" % LOGS[log]
 
-    request = urllib2.Request(url = log + '/ct/v1/add-chain', data=jsonRequest)
+    request = urllib2.Request(url = LOGS[log] + '/ct/v1/add-chain', data=jsonRequest)
     request.add_header('Content-Type', 'application/json')
     try:
         response = urllib2.urlopen(request)
@@ -54,6 +61,9 @@ for log in LOGS:
             print "  unable to submit certificate to log, HTTP error %d %s: %s" % (e.code, e.reason, e.read())
         else:
             print "  unable to submit certificate to log, HTTP error %d %s" % (e.code, e.reason)
+        continue
+    except urllib2.URLError as e:
+        print "  unable to submit certificate to log, error %s" % e.reason
         continue
 
     sct = json.loads(jsonResponse)
@@ -68,15 +78,20 @@ for log in LOGS:
     extensions = base64.b64decode(sct['extensions'])
     signature = base64.b64decode(sct['signature'])
     sct = struct.pack('> B 32s Q H '+str(len(extensions))+'s '+str(len(signature))+'s', 0, logId, timestamp, len(extensions), extensions, signature)
-    scts.append(sct)
+    scts.append((log, sct))
 
     print "  SCT (%d bytes): %s" % (len(sct), base64.b64encode(sct))
 
 if args.output:
     size = 0
-    for sct in scts:
+    for log, sct in scts:
         size += 2 + len(sct)
     args.output.write(struct.pack('>H', size))
-    for sct in scts:
+    for log, sct in scts:
         args.output.write(struct.pack('>H '+str(len(sct))+'s', len(sct), sct))
     args.output.close()
+
+if args.output_dir:
+    for log, sct in scts:
+        with open(args.output_dir + '/' + log + '.sct', 'w') as f:
+            f.write(sct)
