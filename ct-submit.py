@@ -6,19 +6,27 @@ import urllib2
 from datetime import datetime
 
 LOGS = {
-    'aviator': 'https://ct.googleapis.com/aviator',
+    'icarus': 'https://ct.googleapis.com/icarus',
     'pilot': 'https://ct.googleapis.com/pilot',
     'rocketeer': 'https://ct.googleapis.com/rocketeer',
-    'submariner': 'https://ct.googleapis.com/submariner',
-    'digicert': 'https://ct1.digicert-ct.com/log',
+    'skydiver': 'https://ct.googleapis.com/skydiver',
+
+    'digicert1': 'https://ct1.digicert-ct.com/log',
+    'digicert2': 'https://ct2.digicert-ct.com/log',
+
     'symantec': 'https://ct.ws.symantec.com',
-    'venafi': 'https://ctlog.api.venafi.com',
-    'wosign': 'https://ctlog.wosign.com',
     'vega': 'https://vega.ws.symantec.com',
+    'sirius': 'https://sirius.ws.symantec.com',
+
+    'venafi2': 'https://ctlog-gen2.api.venafi.com',
+
+    'sabre': 'https://sabre.ct.comodo.com',
+    'mammoth': 'https://mammoth.ct.comodo.com',
+
+    'wosign': 'https://ctlog.wosign.com',
     'cnnic': 'https://ctserver.cnnic.cn',
-    'gdca': 'https://ct.gdca.com.cn',
     'startssl': 'https://ct.startssl.com',
-    'izenpe': 'https://ct.izenpe.eus',
+    'gdca': 'https://ct.gdca.com.cn',
 }
 
 parser = argparse.ArgumentParser(description='Certificate Transparency submission client')
@@ -49,7 +57,7 @@ jsonRequest = json.dumps({'chain': chain})
 
 scts = []
 for log in sorted(LOGS.iterkeys()):
-    print "sending request to %s" % LOGS[log]
+    print("sending request to %s" % LOGS[log])
 
     request = urllib2.Request(url = LOGS[log] + '/ct/v1/add-chain', data=jsonRequest)
     request.add_header('Content-Type', 'application/json')
@@ -58,20 +66,20 @@ for log in sorted(LOGS.iterkeys()):
         jsonResponse = response.read()
     except urllib2.HTTPError as e:
         if e.code >= 400 and e.code < 500:
-            print "  unable to submit certificate to log, HTTP error %d %s: %s" % (e.code, e.reason, e.read())
+            print("  unable to submit certificate to log, HTTP error %d %s: %s" % (e.code, e.reason, e.read()))
         else:
-            print "  unable to submit certificate to log, HTTP error %d %s" % (e.code, e.reason)
+            print("  unable to submit certificate to log, HTTP error %d %s" % (e.code, e.reason))
         continue
     except urllib2.URLError as e:
-        print "  unable to submit certificate to log, error %s" % e.reason
+        print("  unable to submit certificate to log, error %s" % e.reason)
         continue
 
     sct = json.loads(jsonResponse)
-    print "  version: %d" % sct['sct_version']
-    print "  log ID: %s" % sct['id']
-    print "  timestamp: %d (%s)" % (sct['timestamp'], datetime.fromtimestamp(sct['timestamp'] / 1000))
-    print "  extensions: %s" % sct['extensions']
-    print "  signature: %s" % sct['signature']
+    print("  version: %d" % sct['sct_version'])
+    print("  log ID: %s" % sct['id'])
+    print("  timestamp: %d (%s)" % (sct['timestamp'], datetime.fromtimestamp(sct['timestamp'] / 1000)))
+    print("  extensions: %s" % sct['extensions'])
+    print("  signature: %s" % sct['signature'])
 
     logId = base64.b64decode(sct['id'])
     timestamp = sct['timestamp']
@@ -80,7 +88,7 @@ for log in sorted(LOGS.iterkeys()):
     sct = struct.pack('> B 32s Q H '+str(len(extensions))+'s '+str(len(signature))+'s', 0, logId, timestamp, len(extensions), extensions, signature)
     scts.append((log, sct))
 
-    print "  SCT (%d bytes): %s" % (len(sct), base64.b64encode(sct))
+    print("  SCT (%d bytes): %s" % (len(sct), base64.b64encode(sct)))
 
 if args.output:
     size = 0
