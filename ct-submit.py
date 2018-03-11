@@ -32,6 +32,7 @@ parser.add_argument('-O', dest='output_dir', help='output individual SCTs to a d
 args = parser.parse_args()
 
 chain = []
+cert = None
 for pem in args.pem:
     for line in pem.readlines():
         line = line.strip()
@@ -40,13 +41,16 @@ for pem in args.pem:
 
         if line == '-----BEGIN CERTIFICATE-----':
             cert = []
-            continue
         elif line == '-----END CERTIFICATE-----':
             b64 = ''.join(cert)
             chain.append(b64)
-            continue
-        else:
+            cert = None
+        elif cert != None:
             cert.append(line)
+
+if len(chain) == 0:
+    print("no certificates found")
+    sys.exit(1)
 
 jsonRequest = json.dumps({'chain': chain})
 
