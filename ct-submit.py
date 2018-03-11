@@ -18,15 +18,10 @@ LOGS = {
     'vega': 'https://vega.ws.symantec.com',
     'sirius': 'https://sirius.ws.symantec.com',
 
-    'venafi2': 'https://ctlog-gen2.api.venafi.com',
-
     'sabre': 'https://sabre.ct.comodo.com',
     'mammoth': 'https://mammoth.ct.comodo.com',
 
-    'wosign': 'https://ctlog.wosign.com',
     'cnnic': 'https://ctserver.cnnic.cn',
-    'startssl': 'https://ct.startssl.com',
-    'gdca': 'https://ct.gdca.com.cn',
 }
 
 parser = argparse.ArgumentParser(description='Certificate Transparency submission client')
