@@ -20,8 +20,6 @@ LOGS = {
     'vega': 'https://vega.ws.symantec.com',
     'sirius': 'https://sirius.ws.symantec.com',
 
-    'venafi2': 'https://ctlog-gen2.api.venafi.com',
-
     'mammoth': 'https://mammoth.ct.comodo.com',
     'sabre': 'https://sabre.ct.comodo.com',
 }
