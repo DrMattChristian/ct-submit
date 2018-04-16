@@ -16,9 +16,7 @@ LOGS = {
     'digicert1': 'https://ct1.digicert-ct.com/log',
     'digicert2': 'https://ct2.digicert-ct.com/log',
 
-    'digicert': 'https://ct.ws.symantec.com',
-    'vega': 'https://vega.ws.symantec.com',
-    'sirius': 'https://sirius.ws.symantec.com',
+    'nordunet': 'https://plausible.ct.nordu.net',
 
     'mammoth': 'https://mammoth.ct.comodo.com',
     'sabre': 'https://sabre.ct.comodo.com',
