@@ -22,6 +22,7 @@ except ImportError:  # Python 2.7 and older
 
 
 # https://crt.sh/monitored-logs
+#    'daedalus' : 'https://ct.googleapis.com/daedalus',
 LOGS = {
     'argon2018': 'https://ct.googleapis.com/logs/argon2018',
     'argon2019': 'https://ct.googleapis.com/logs/argon2019',
