@@ -14,44 +14,71 @@ from datetime import datetime
 from json import dumps, loads
 from random import random
 from struct import pack
+
 try:  # Python 3 and newer only
     from urllib.error import HTTPError, URLError
     from urllib.request import Request, urlopen
 except ImportError:  # Python 2.7 and older
     from urllib2 import HTTPError, Request, urlopen, URLError
 
+# Requires python2-cryptography and/or python34-cryptography
+from cryptography import x509
+from cryptography.x509 import ExtensionNotFound, oid
+from cryptography.hazmat.backends import default_backend
 
 # https://crt.sh/monitored-logs
-#    'daedalus' : 'https://ct.googleapis.com/daedalus',
-LOGS = {
-    'argon2018': 'https://ct.googleapis.com/logs/argon2018',
-    'argon2019': 'https://ct.googleapis.com/logs/argon2019',
-    'argon2020': 'https://ct.googleapis.com/logs/argon2020',
-    'argon2021': 'https://ct.googleapis.com/logs/argon2021',
-    'digicert1': 'https://ct1.digicert-ct.com/log',
-    'digicert2': 'https://ct2.digicert-ct.com/log',
-    'icarus': 'https://ct.googleapis.com/icarus',
-    'mammoth': 'https://mammoth.ct.comodo.com',
-    'nimbus2018': 'https://ct.cloudflare.com/logs/nimbus2018',
-    'nimbus2019': 'https://ct.cloudflare.com/logs/nimbus2019',
-    'nimbus2020': 'https://ct.cloudflare.com/logs/nimbus2020',
-    'nimbus2021': 'https://ct.cloudflare.com/logs/nimbus2021',
-    'nessie2019': 'https://nessie2019.ct.digicert.com/log',
-    'nessie2020': 'https://nessie2020.ct.digicert.com/log',
-    'nessie2021': 'https://nessie2021.ct.digicert.com/log',
+# https://www.certificate-transparency.org/known-logs
+# https://sslmate.com/certspotter/stats
+
+# CT logs for archive reference
+ARCHIVELOGS = {
+    'daedalus': 'https://ct.googleapis.com/daedalus',
+    'dodo': 'https://dodo.ct.comodo.com',
     'nordunet': 'https://plausible.ct.nordu.net',
-    'pilot': 'https://ct.googleapis.com/pilot',
-    'rocketeer': 'https://ct.googleapis.com/rocketeer',
-    'sabre': 'https://sabre.ct.comodo.com',
-    'skydiver': 'https://ct.googleapis.com/skydiver',
-    'xenon2018': 'https://ct.googleapis.com/logs/xenon2018',
-    'xenon2019': 'https://ct.googleapis.com/logs/xenon2019',
-    'xenon2020': 'https://ct.googleapis.com/logs/xenon2020',
-    'xenon2021': 'https://ct.googleapis.com/logs/xenon2021',
-    'yeti2018': 'https://yeti2018.ct.digicert.com/log',
-    'yeti2019': 'https://yeti2019.ct.digicert.com/log',
-    'yeti2020': 'https://yeti2020.ct.digicert.com/log',
-    'yeti2021': 'https://yeti2021.ct.digicert.com/log',
+    'submariner': 'https://ct.googleapis.com/submariner',
+}
+
+# CT logs sharded by expiration year
+# Become R/O after year-end passes
+YEARLOGS = {
+    2018: {'argon': 'https://ct.googleapis.com/logs/argon2018',
+           'nimbus': 'https://ct.cloudflare.com/logs/nimbus2018',
+           'xenon': 'https://ct.googleapis.com/logs/xenon2018',
+           'yeti': 'https://yeti2018.ct.digicert.com/log', },
+    2019: {'argon': 'https://ct.googleapis.com/logs/argon2019',
+           'nessie': 'https://nessie2019.ct.digicert.com/log',
+           'nimbus': 'https://ct.cloudflare.com/logs/nimbus2019',
+           'xenon': 'https://ct.googleapis.com/logs/xenon2019',
+           'yeti': 'https://yeti2019.ct.digicert.com/log', },
+    2020: {'argon': 'https://ct.googleapis.com/logs/argon2020',
+           'nessie': 'https://nessie2020.ct.digicert.com/log',
+           'nimbus': 'https://ct.cloudflare.com/logs/nimbus2020',
+           'xenon': 'https://ct.googleapis.com/logs/xenon2020',
+           'yeti': 'https://yeti2020.ct.digicert.com/log', },
+    2021: {'argon': 'https://ct.googleapis.com/logs/argon2021',
+           'nessie': 'https://nessie2021.ct.digicert.com/log',
+           'nimbus': 'https://ct.cloudflare.com/logs/nimbus2021',
+           'xenon': 'https://ct.googleapis.com/logs/xenon2021',
+           'yeti': 'https://yeti2021.ct.digicert.com/log', },
+    2022: {'argon': 'https://ct.googleapis.com/logs/argon2022',
+           'nessie': 'https://nessie2022.ct.digicert.com/log',
+           'nimbus': 'https://ct.cloudflare.com/logs/nimbus2022',
+           'xenon': 'https://ct.googleapis.com/logs/xenon2022',
+           'yeti': 'https://yeti2022.ct.digicert.com/log', },
+    2023: {'nimbus': 'https://ct.cloudflare.com/logs/nimbus2023', },
+}
+
+# CT logs which are the non-sharded defaults
+# Most will become R/O at some point
+LOGS = {
+    'digicert1': 'https://ct1.digicert-ct.com/log',  # R/O ???
+    'digicert2': 'https://ct2.digicert-ct.com/log',  # R/O ???
+    'icarus': 'https://ct.googleapis.com/icarus',  # R/O 2019-Aug-01
+    'mammoth': 'https://mammoth.ct.comodo.com',  # R/O ???
+    'pilot': 'https://ct.googleapis.com/pilot',  # R/O 2019-May-01
+    'rocketeer': 'https://ct.googleapis.com/rocketeer',  # R/O 2019-Jun-01
+    'sabre': 'https://sabre.ct.comodo.com',  # R/O ???
+    'skydiver': 'https://ct.googleapis.com/skydiver',  # R/O 2019-Jul-01
 }
 
 PARSER = ArgumentParser(description='Certificate Transparency submission client')
@@ -66,12 +93,17 @@ ARGS = PARSER.parse_args()
 
 CHAIN = []
 CERT = None
+NOW = datetime.now()  # Naive date due to before/after compare
+TYEAR = NOW.year
+PEMDATA = None
+X509 = None
 for pem in ARGS.pem:
+    PEMDATA = pem.read().encode('utf8')
+    pem.seek(0)
     for line in pem.readlines():
         line = line.strip()
         if len(line) == 0:
             continue
-
         if line == '-----BEGIN CERTIFICATE-----':
             CERT = []
         elif line == '-----END CERTIFICATE-----':
@@ -80,14 +112,66 @@ for pem in ARGS.pem:
             CERT = None
         elif CERT is not None:
             CERT.append(line)
+    X509 = x509.load_pem_x509_certificate(PEMDATA, default_backend())
+    NAL = X509.subject.get_attributes_for_oid(oid.NameOID.COMMON_NAME)
+    SANC = 0
+    if NAL:
+        print("Common name:\t", str(NAL[0].value))
+    else:
+        print("No CN found, must be new?")
+    try:
+        SANEXT = X509.extensions.get_extension_for_oid(oid.ExtensionOID.SUBJECT_ALTERNATIVE_NAME)
+        SANL = SANEXT.value.get_values_for_type(x509.DNSName)
+        SANC = len(SANL)
+        print("%s SANs: " % SANC, end='')
+        for SAN in SANL:
+            print("%s " % str(SAN), end='')
+        print("")
+    except ExtensionNotFound:
+        print("No SAN extension found, likely self-signed or ancient.")
+    CA = False
+    try:
+        BCEXT = X509.extensions.get_extension_for_oid(oid.ExtensionOID.BASIC_CONSTRAINTS)
+        BC = BCEXT.value
+        if BC and BC.ca is True:
+            print("Found a CA root.")
+            CA = True
+    except ExtensionNotFound:
+        print("No Basic Constraints extension found.")
+    NVB = X509.not_valid_before
+    BYEAR = NVB.year
+    NVA = X509.not_valid_after
+    AYEAR = NVA.year
+    DAYSVALID = 0
+    if NVA > NVB:
+        DAYSVALID = abs((NVA - NVB).days)
+        print("Valid for %s days." % DAYSVALID)
+    else:
+        print("Not valid after is less than not valid before, date error!")
+        LOGS = {}
+    if (SANC == 0) or (CA is True):
+        print("Likely self-signed or CA root, will not send to any CT logs.")
+        LOGS = {}
+    elif NVA < NOW:
+        print("Expired on %s, send to archive CT logs only." % str(NVA))
+        LOGS = ARCHIVELOGS
+    elif (AYEAR >= TYEAR) and (AYEAR <= 2023):
+        print("Expires in %s, send to that year CT logs only." % str(AYEAR))
+        LOGS = YEARLOGS[AYEAR]
+    elif DAYSVALID > 825:
+        print("Valid for %s days, send to archive CT logs only." % str(DAYSVALID))
+        LOGS = ARCHIVELOGS
+    else:
+        print("Send to default CT logs.")
+
 
 if len(CHAIN) == 0:
-    print("no certificates found")
+    print("No certificates found, exiting.")
     exit(1)
 
 SCTS = []
 for logname, logurl in sorted(LOGS.items(), key=lambda x: random()):
-    print("sending request to %s" % logname)
+    print("Sending request to %s" % logname)
 
     request = Request(logurl + '/ct/v1/add-chain',
                       data=dumps({'chain': CHAIN}).encode('utf8'),
@@ -97,22 +181,21 @@ for logname, logurl in sorted(LOGS.items(), key=lambda x: random()):
         jsonResponse = response.read().decode('utf8')
     except HTTPError as err:
         if err.code >= 400 and err.code < 500:
-            print("  unable to submit certificate to log, HTTP error %d %s: %s" %
+            print("  Unable to submit certificate to log, HTTP error %d %s: %s" %
                   (err.code, err.reason, err.read()))
         else:
-            print("  unable to submit certificate to log, HTTP error %d %s" %
+            print("  Unable to submit certificate to log, HTTP error %d %s" %
                   (err.code, err.reason))
         continue
     except URLError as err:
-        print("  unable to submit certificate to log, error %s" % err.reason)
+        print("  Unable to submit certificate to log, error %s" % err.reason)
         continue
 
     sct = loads(jsonResponse)
-    print("  version: %d" % sct['sct_version'])
-    print("  log ID: %s" % sct['id'])
-    print("  timestamp: %d (%s)" % (sct['timestamp'], datetime.fromtimestamp(sct['timestamp'] / 1000)))
-    print("  extensions: %s" % sct['extensions'])
-    print("  signature: %s" % sct['signature'])
+    print("  Version: %d  Log ID: %s" % (sct['sct_version'], sct['id']))
+    print("  Timestamp: %d (%s)  Extensions: %s" %
+          (sct['timestamp'], datetime.fromtimestamp(sct['timestamp'] / 1000), sct['extensions']))
+    print("  Signature: %s" % str(sct['signature']))
 
     logId = b64decode(sct['id'])
     timestamp = sct['timestamp']
@@ -122,7 +205,7 @@ for logname, logurl in sorted(LOGS.items(), key=lambda x: random()):
                logId, timestamp, len(extensions), extensions, signature)
     SCTS.append((logname, sct))
 
-    print("  SCT (%d bytes): %s" % (len(sct), b64encode(sct)))
+    print("  SCT (%d bytes): %s" % (len(sct), str(b64encode(sct))))
 
 if ARGS.output:
     SIZE = 0
