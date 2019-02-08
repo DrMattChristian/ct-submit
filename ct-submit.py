@@ -41,10 +41,6 @@ ARCHIVELOGS = {
 # CT logs sharded by expiration year
 # Become R/O after year-end passes
 YEARLOGS = {
-    2018: {'argon': 'https://ct.googleapis.com/logs/argon2018',
-           'nimbus': 'https://ct.cloudflare.com/logs/nimbus2018',
-           'xenon': 'https://ct.googleapis.com/logs/xenon2018',
-           'yeti': 'https://yeti2018.ct.digicert.com/log', },
     2019: {'argon': 'https://ct.googleapis.com/logs/argon2019',
            'nessie': 'https://nessie2019.ct.digicert.com/log',
            'nimbus': 'https://ct.cloudflare.com/logs/nimbus2019',
@@ -65,7 +61,9 @@ YEARLOGS = {
            'nimbus': 'https://ct.cloudflare.com/logs/nimbus2022',
            'xenon': 'https://ct.googleapis.com/logs/xenon2022',
            'yeti': 'https://yeti2022.ct.digicert.com/log', },
-    2023: {'nimbus': 'https://ct.cloudflare.com/logs/nimbus2023', },
+    2023: {'nessie': 'https://nessie2023.ct.digicert.com/log',
+           'nimbus': 'https://ct.cloudflare.com/logs/nimbus2023',
+           'yeti': 'https://yeti2023.ct.digicert.com/log', },
 }
 
 # CT logs which are the non-sharded defaults
