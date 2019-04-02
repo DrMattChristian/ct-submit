@@ -29,8 +29,10 @@ from cryptography.hazmat.backends import default_backend
 # https://crt.sh/monitored-logs
 # https://www.certificate-transparency.org/known-logs
 # https://sslmate.com/certspotter/stats
+# https://sslmate.com/labs/ct_ecosystem/ecosystem.html
+# https://ct.cloudflare.com/logs
 
-# CT logs for archive reference
+# CT logs used for archival or historical reference
 ARCHIVELOGS = {
     'daedalus': 'https://ct.googleapis.com/daedalus',
     'dodo': 'https://dodo.ct.comodo.com',
@@ -38,8 +40,26 @@ ARCHIVELOGS = {
     'submariner': 'https://ct.googleapis.com/submariner',
 }
 
-# CT logs sharded by expiration year
-# Become R/O after year-end passes
+# CT logs used for testing and untrusted (not used yet)
+# Primarily intended as an integration testing target for CAs
+TESTLOGS = {
+    'crucible': 'https://ct.googleapis.com/logs/crucible',
+    'dodo': 'https://dodo.ct.comodo.com',
+    'testtube': 'https://ct.googleapis.com/testtube',  # R/O ???
+}
+
+# CT logs used for testing and untrusted (not used yet)
+# Sharded by certificate expiration year
+# Become read only (R/O) after year-end passes
+TESTYEARLOGS = {
+    2019: {'solera': 'https://ct.googleapis.com/logs/solera2019', },
+    2020: {'solera': 'https://ct.googleapis.com/logs/solera2020', },
+    2021: {'solera': 'https://ct.googleapis.com/logs/solera2021', },
+    2022: {'solera': 'https://ct.googleapis.com/logs/solera2022', },
+}
+
+# CT logs sharded by certificate expiration year
+# Become read only (R/O) after year-end passes
 YEARLOGS = {
     2019: {'argon': 'https://ct.googleapis.com/logs/argon2019',
            'nessie': 'https://nessie2019.ct.digicert.com/log',
@@ -67,9 +87,9 @@ YEARLOGS = {
 }
 
 # CT logs which are the non-sharded defaults
-# Most will become R/O at some point
+# Most will become read only (R/O) at some point
 LOGS = {
-    'digicert1': 'https://ct1.digicert-ct.com/log',  # R/O ???
+    'digicert1': 'https://ct1.digicert-ct.com/log',  # R/O 2019-May-08
     'digicert2': 'https://ct2.digicert-ct.com/log',  # R/O ???
     'icarus': 'https://ct.googleapis.com/icarus',  # R/O 2019-Aug-01
     'mammoth': 'https://mammoth.ct.comodo.com',  # R/O ???
@@ -113,8 +133,10 @@ for pem in ARGS.pem:
     X509 = x509.load_pem_x509_certificate(PEMDATA, default_backend())
     NAL = X509.subject.get_attributes_for_oid(oid.NameOID.COMMON_NAME)
     SANC = 0
+    CN = ''
     if NAL:
-        print("Common name:\t", str(NAL[0].value))
+        CN = str(NAL[0].value)
+        print("Common Name CN:\t", CN)
     else:
         print("No CN found, must be new?")
     try:
@@ -147,15 +169,15 @@ for pem in ARGS.pem:
     else:
         print("Not valid after is less than not valid before, date error!")
         LOGS = {}
-    if (SANC == 0) or (CA is True):
-        print("Likely self-signed or CA root, will not send to any CT logs.")
+    if (CA is True) or (SANC == 0):
+        print("CA root or likely self-signed, will not send to any CT logs.")
         LOGS = {}
     elif NVA < NOW:
         print("Expired on %s, send to archive CT logs only." % str(NVA))
         LOGS = ARCHIVELOGS
     elif (AYEAR >= TYEAR) and (AYEAR <= 2023):
-        print("Expires in %s, send to that year CT logs only." % str(AYEAR))
-        LOGS = YEARLOGS[AYEAR]
+        print("Expires in %s, send to that year CT logs as well." % str(AYEAR))
+        LOGS.update(YEARLOGS[AYEAR])
     elif DAYSVALID > 825:
         print("Valid for %s days, send to archive CT logs only." % str(DAYSVALID))
         LOGS = ARCHIVELOGS
