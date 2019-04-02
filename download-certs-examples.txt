@@ -1,5 +1,5 @@
 # SMTPS example
-openssl s_client -connect smtp.example.com:25 -name your.server.tld -starttls smtp -showcerts > smtp.example.com.pem
+openssl s_client -connect smtp.example.com:25 -name smtp.example.com -starttls smtp -showcerts > smtp.example.com.pem
 # HTTPS example
-openssl s_client -connect https.example.com:443 -showcerts > https.example.com.pem
+openssl s_client -connect https.example.com:443 -servername https.example.com -showcerts > https.example.com.pem
 # Afterwards, delete extra text lines around the SSL certificate blocks.
