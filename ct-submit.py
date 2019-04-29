@@ -81,8 +81,10 @@ YEARLOGS = {
            'nimbus': 'https://ct.cloudflare.com/logs/nimbus2022',
            'xenon': 'https://ct.googleapis.com/logs/xenon2022',
            'yeti': 'https://yeti2022.ct.digicert.com/log', },
-    2023: {'nessie': 'https://nessie2023.ct.digicert.com/log',
+    2023: {'argon': 'https://ct.googleapis.com/logs/argon2023',
+           'nessie': 'https://nessie2023.ct.digicert.com/log',
            'nimbus': 'https://ct.cloudflare.com/logs/nimbus2023',
+           'xenon': 'https://ct.googleapis.com/logs/xenon2023',
            'yeti': 'https://yeti2023.ct.digicert.com/log', },
 }
 
