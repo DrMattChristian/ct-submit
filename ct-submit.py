@@ -52,33 +52,41 @@ TESTLOGS = {
 # Sharded by certificate expiration year
 # Become read only (R/O) after year-end passes
 TESTYEARLOGS = {
-    2019: {'solera': 'https://ct.googleapis.com/logs/solera2019', },
-    2020: {'solera': 'https://ct.googleapis.com/logs/solera2020', },
-    2021: {'solera': 'https://ct.googleapis.com/logs/solera2021', },
-    2022: {'solera': 'https://ct.googleapis.com/logs/solera2022', },
+    2019: {'solera': 'https://ct.googleapis.com/logs/solera2019',
+           'testflume': 'https://testflume.ct.letsencrypt.org/2019', },
+    2020: {'solera': 'https://ct.googleapis.com/logs/solera2020',
+           'testflume': 'https://testflume.ct.letsencrypt.org/2020', },
+    2021: {'solera': 'https://ct.googleapis.com/logs/solera2021',
+           'testflume': 'https://testflume.ct.letsencrypt.org/2021', },
+    2022: {'solera': 'https://ct.googleapis.com/logs/solera2022',
+           'testflume': 'https://testflume.ct.letsencrypt.org/2022', },
 }
 
 # CT logs sharded by certificate expiration year
-# Become read only (R/O) after year-end passes
+# Become read only (R/O) after year-end passes, except LE oak uses Jan 7
 YEARLOGS = {
     2019: {'argon': 'https://ct.googleapis.com/logs/argon2019',
            'nessie': 'https://nessie2019.ct.digicert.com/log',
            'nimbus': 'https://ct.cloudflare.com/logs/nimbus2019',
+           'oak': 'https://oak.ct.letsencrypt.org/2019',
            'xenon': 'https://ct.googleapis.com/logs/xenon2019',
            'yeti': 'https://yeti2019.ct.digicert.com/log', },
     2020: {'argon': 'https://ct.googleapis.com/logs/argon2020',
            'nessie': 'https://nessie2020.ct.digicert.com/log',
            'nimbus': 'https://ct.cloudflare.com/logs/nimbus2020',
+           'oak': 'https://oak.ct.letsencrypt.org/2020',
            'xenon': 'https://ct.googleapis.com/logs/xenon2020',
            'yeti': 'https://yeti2020.ct.digicert.com/log', },
     2021: {'argon': 'https://ct.googleapis.com/logs/argon2021',
            'nessie': 'https://nessie2021.ct.digicert.com/log',
            'nimbus': 'https://ct.cloudflare.com/logs/nimbus2021',
+           'oak': 'https://oak.ct.letsencrypt.org/2021',
            'xenon': 'https://ct.googleapis.com/logs/xenon2021',
            'yeti': 'https://yeti2021.ct.digicert.com/log', },
     2022: {'argon': 'https://ct.googleapis.com/logs/argon2022',
            'nessie': 'https://nessie2022.ct.digicert.com/log',
            'nimbus': 'https://ct.cloudflare.com/logs/nimbus2022',
+           'oak': 'https://oak.ct.letsencrypt.org/2022',
            'xenon': 'https://ct.googleapis.com/logs/xenon2022',
            'yeti': 'https://yeti2022.ct.digicert.com/log', },
     2023: {'argon': 'https://ct.googleapis.com/logs/argon2023',
