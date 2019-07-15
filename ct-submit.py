@@ -99,14 +99,10 @@ YEARLOGS = {
 # CT logs which are the non-sharded defaults
 # Most will become read only (R/O) at some point
 LOGS = {
-    'digicert1': 'https://ct1.digicert-ct.com/log',  # R/O 2019-May-08
+    'digicert1': 'https://ct1.digicert-ct.com/log',  # R/O ???
     'digicert2': 'https://ct2.digicert-ct.com/log',  # R/O ???
-    'icarus': 'https://ct.googleapis.com/icarus',  # R/O 2019-Aug-01
     'mammoth': 'https://mammoth.ct.comodo.com',  # R/O ???
-    'pilot': 'https://ct.googleapis.com/pilot',  # R/O 2019-May-01
-    'rocketeer': 'https://ct.googleapis.com/rocketeer',  # R/O 2019-Jun-01
     'sabre': 'https://sabre.ct.comodo.com',  # R/O ???
-    'skydiver': 'https://ct.googleapis.com/skydiver',  # R/O 2019-Jul-01
 }
 
 PARSER = ArgumentParser(description='Certificate Transparency submission client')
