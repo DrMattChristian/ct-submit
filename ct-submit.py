@@ -40,15 +40,16 @@ ARCHIVELOGS = {
     'submariner': 'https://ct.googleapis.com/submariner',
 }
 
-# CT logs used for testing and untrusted (not used yet)
+# CT logs used for testing and untrusted
 # Primarily intended as an integration testing target for CAs
 TESTLOGS = {
     'crucible': 'https://ct.googleapis.com/logs/crucible',
     'dodo': 'https://dodo.ct.comodo.com',
+    'golem': 'https://golem.ct.digicert.com/log',
     'testtube': 'https://ct.googleapis.com/testtube',  # R/O ???
 }
 
-# CT logs used for testing and untrusted (not used yet)
+# CT logs used for testing and untrusted
 # Sharded by certificate expiration year
 # Become read only (R/O) after year-end passes
 TESTYEARLOGS = {
@@ -176,8 +177,12 @@ for pem in ARGS.pem:
         print("Not valid after is less than not valid before, date error!")
         LOGS = {}
     if (CA is True) or (SANC == 0):
-        print("CA root or likely self-signed, will not send to any CT logs.")
-        LOGS = {}
+        print("CA root or likely self-signed, send to test CT logs only.")
+        LOGS = TESTLOGS
+        if (AYEAR >= TYEAR) and (AYEAR <= 2023):
+            print("Expires in %s, send to that year test CT logs as well." % str(AYEAR))
+            LOGS.update(TESTYEARLOGS[AYEAR])
+        print("WARNING: Test CT log requests may not succeed due to trusted root requirements.")
     elif NVA < NOW:
         print("Expired on %s, send to archive CT logs only." % str(NVA))
         LOGS = ARCHIVELOGS
