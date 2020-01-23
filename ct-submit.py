@@ -104,7 +104,6 @@ LOGS = {
     'digicert2': 'https://ct2.digicert-ct.com/log',  # R/O ???
     'mammoth': 'https://mammoth.ct.comodo.com',  # R/O ???
     'sabre': 'https://sabre.ct.comodo.com',  # R/O ???
-    'trustasia': 'https://ct.trustasia.com/log1',  # R/O 2025-01-01
 }
 
 PARSER = ArgumentParser(description='Certificate Transparency submission client')
