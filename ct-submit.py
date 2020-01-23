@@ -36,7 +36,6 @@ from cryptography.hazmat.backends import default_backend
 ARCHIVELOGS = {
     'daedalus': 'https://ct.googleapis.com/daedalus',
     'dodo': 'https://dodo.ct.comodo.com',
-    'nordunet': 'https://plausible.ct.nordu.net',
     'submariner': 'https://ct.googleapis.com/submariner',
 }
 
