@@ -52,8 +52,6 @@ TESTLOGS = {
 # Sharded by certificate expiration year
 # Become read only (R/O) after year-end passes
 TESTYEARLOGS = {
-    2019: {'solera': 'https://ct.googleapis.com/logs/solera2019',
-           'testflume': 'https://testflume.ct.letsencrypt.org/2019', },
     2020: {'solera': 'https://ct.googleapis.com/logs/solera2020',
            'testflume': 'https://testflume.ct.letsencrypt.org/2020', },
     2021: {'solera': 'https://ct.googleapis.com/logs/solera2021',
@@ -65,12 +63,6 @@ TESTYEARLOGS = {
 # CT logs sharded by certificate expiration year
 # Become read only (R/O) after year-end passes, except LE oak uses Jan 7
 YEARLOGS = {
-    2019: {'argon': 'https://ct.googleapis.com/logs/argon2019',
-           'nessie': 'https://nessie2019.ct.digicert.com/log',
-           'nimbus': 'https://ct.cloudflare.com/logs/nimbus2019',
-           'oak': 'https://oak.ct.letsencrypt.org/2019',
-           'xenon': 'https://ct.googleapis.com/logs/xenon2019',
-           'yeti': 'https://yeti2019.ct.digicert.com/log', },
     2020: {'argon': 'https://ct.googleapis.com/logs/argon2020',
            'nessie': 'https://nessie2020.ct.digicert.com/log',
            'nimbus': 'https://ct.cloudflare.com/logs/nimbus2020',
@@ -175,22 +167,22 @@ for pem in ARGS.pem:
     else:
         print("Not valid after is less than not valid before, date error!")
         LOGS = {}
-    if (CA is True) or (SANC == 0):
+    if NVA < NOW:
+        print("Expired on %s, send to archive CT logs only." % str(NVA))
+        LOGS = ARCHIVELOGS
+    elif DAYSVALID > 825:
+        print("Valid for %s days, send to archive CT logs only." % str(DAYSVALID))
+        LOGS = ARCHIVELOGS
+    elif (AYEAR >= TYEAR) and (AYEAR <= 2023):
+        print("Expires in %s, send to that year CT logs as well." % str(AYEAR))
+        LOGS.update(YEARLOGS[AYEAR])
+    elif (CA is True) or (SANC == 0):
         print("CA root or likely self-signed, send to test CT logs only.")
         LOGS = TESTLOGS
         if (AYEAR >= TYEAR) and (AYEAR <= 2023):
             print("Expires in %s, send to that year test CT logs as well." % str(AYEAR))
             LOGS.update(TESTYEARLOGS[AYEAR])
         print("WARNING: Test CT log requests may not succeed due to trusted root requirements.")
-    elif NVA < NOW:
-        print("Expired on %s, send to archive CT logs only." % str(NVA))
-        LOGS = ARCHIVELOGS
-    elif (AYEAR >= TYEAR) and (AYEAR <= 2023):
-        print("Expires in %s, send to that year CT logs as well." % str(AYEAR))
-        LOGS.update(YEARLOGS[AYEAR])
-    elif DAYSVALID > 825:
-        print("Valid for %s days, send to archive CT logs only." % str(DAYSVALID))
-        LOGS = ARCHIVELOGS
     else:
         print("Send to default CT logs.")
 
