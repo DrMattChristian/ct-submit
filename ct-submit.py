@@ -58,6 +58,8 @@ TESTYEARLOGS = {
            'testflume': 'https://testflume.ct.letsencrypt.org/2021', },
     2022: {'solera': 'https://ct.googleapis.com/logs/solera2022',
            'testflume': 'https://testflume.ct.letsencrypt.org/2022', },
+    2023: {'solera': 'https://ct.googleapis.com/logs/solera2023',
+           'testflume': 'https://testflume.ct.letsencrypt.org/2023', },
 }
 
 # CT logs sharded by certificate expiration year
@@ -84,6 +86,7 @@ YEARLOGS = {
     2023: {'argon': 'https://ct.googleapis.com/logs/argon2023',
            'nessie': 'https://nessie2023.ct.digicert.com/log',
            'nimbus': 'https://ct.cloudflare.com/logs/nimbus2023',
+           'oak': 'https://oak.ct.letsencrypt.org/2023',
            'xenon': 'https://ct.googleapis.com/logs/xenon2023',
            'yeti': 'https://yeti2023.ct.digicert.com/log', },
 }
