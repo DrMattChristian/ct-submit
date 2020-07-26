@@ -94,8 +94,6 @@ YEARLOGS = {
 # CT logs which are the non-sharded defaults
 # Most will become read only (R/O) at some point
 LOGS = {
-    'digicert1': 'https://ct1.digicert-ct.com/log',  # R/O ???
-    'digicert2': 'https://ct2.digicert-ct.com/log',  # R/O ???
     'mammoth': 'https://mammoth.ct.comodo.com',  # R/O ???
     'sabre': 'https://sabre.ct.comodo.com',  # R/O ???
 }
