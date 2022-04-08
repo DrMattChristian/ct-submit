@@ -52,8 +52,6 @@ TESTLOGS = {
 # Sharded by certificate expiration year
 # Become read only (R/O) after year-end passes
 TESTYEARLOGS = {
-    2021: {'solera': 'https://ct.googleapis.com/logs/solera2021',
-           'testflume': 'https://testflume.ct.letsencrypt.org/2021', },
     2022: {'solera': 'https://ct.googleapis.com/logs/solera2022',
            'testflume': 'https://testflume.ct.letsencrypt.org/2022', },
     2023: {'solera': 'https://ct.googleapis.com/logs/solera2023',
@@ -63,12 +61,6 @@ TESTYEARLOGS = {
 # CT logs sharded by certificate expiration year
 # Become read only (R/O) after year-end passes, except LE oak uses Jan 7
 YEARLOGS = {
-    2021: {'argon': 'https://ct.googleapis.com/logs/argon2021',
-           'nessie': 'https://nessie2021.ct.digicert.com/log',
-           'nimbus': 'https://ct.cloudflare.com/logs/nimbus2021',
-           'oak': 'https://oak.ct.letsencrypt.org/2021',
-           'xenon': 'https://ct.googleapis.com/logs/xenon2021',
-           'yeti': 'https://yeti2021.ct.digicert.com/log', },
     2022: {'argon': 'https://ct.googleapis.com/logs/argon2022',
            'nessie': 'https://nessie2022.ct.digicert.com/log',
            'nimbus': 'https://ct.cloudflare.com/logs/nimbus2022',
